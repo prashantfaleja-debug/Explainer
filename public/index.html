@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Explain Like I'm 5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    
+    /* All 11 Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes ripple { from { transform: scale(0); opacity: 1; } to { transform: scale(4); opacity: 0; } }
+    @keyframes checkmark { from { opacity: 0; transform: scale(0) rotate(-45deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+    @keyframes progressBar { 0% { width: 0%; } 85% { width: 85%; } 100% { width: 100%; } }
+    @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 12px; }
+    ::-webkit-scrollbar-track { background: rgba(102, 126, 234, 0.1); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #764ba2, #667eea); }
+    
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      margin: 0; 
+      padding: 30px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      min-height: 100vh;
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffc107, #ff9800);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 25px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      animation: slideUp 0.6s ease-out;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    }
+    
+    .card { 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px; 
+      padding: 32px; 
+      max-width: 800px; 
+      margin: 0 auto 24px; 
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      animation: slideUp 0.7s ease-out;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    
+    .card:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 35px 60px rgba(102, 126, 234, 0.2), 0 0 1px rgba(0, 0, 0, 0.02);
+    }
+    
+    .card h1 { 
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 12px 0; 
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+    
+    .card p {
+      font-family: 'Inter', sans-serif;
+      color: #666;
+      line-height: 1.7;
+      margin: 0 0 18px 0;
+      font-size: 15px;
+    }
+    
+    textarea, input { 
+      font-family: 'Inter', sans-serif;
+      width: 100%; 
+      margin-top: 12px; 
+      margin-bottom: 12px;
+      padding: 14px; 
+      font-size: 16px; 
+      border: 2px solid #e0e0e0;
+      border-radius: 10px; 
+      transition: all 0.3s ease;
+      background: white;
+    }
+    
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+      transform: scale(1.01);
+    }
+    
+    input { height: 48px; }
+    
+    button { 
+      font-family: 'Poppins', sans-serif;
+      margin-top: 16px; 
+      margin-bottom: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none; 
+      color: white; 
+      padding: 14px 28px; 
+      border-radius: 10px; 
+      font-size: 16px; 
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    
+    button:active::before {
+      width: 300px;
+      height: 300px;
+      animation: ripple 0.6s ease-out;
+    }
+    
+    button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(102, 126, 234, 0.45);
+    }
+    
+    button:active {
+      transform: translateY(-2px);
+    }
+    
+    button:disabled { 
+      background: linear-gradient(135deg, #ccc, #999);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .loading-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+      width: 100%;
+      border-radius: 0 0 10px 0;
+      animation: progressBar 1.5s ease-in-out;
+    }
+    
+    button.loading-state .loading-progress {
+      display: block;
+    }
+    
+    #output { 
+      font-family: 'Inter', sans-serif;
+      margin-top: 20px; 
+      white-space: pre-wrap; 
+      background: linear-gradient(135deg, #f5f7ff 0%, #eef6ff 100%);
+      padding: 22px; 
+      border-radius: 12px; 
+      min-height: 120px;
+      border: 2px solid #e0e7ff;
+      line-height: 1.7;
+      color: #333;
+      word-break: break-word;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    #recipeOutput { 
+      font-family: 'Inter', sans-serif;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+      padding: 24px;
+      border-radius: 12px;
+      min-height: 140px;
+      border: 2px solid #ffe8a6;
+      box-shadow: 0 12px 32px rgba(255, 184, 77, 0.2);
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: #333;
+      word-break: break-word;
+      font-size: 16px;
+      animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    
+    .success-check {
+      display: inline-block;
+      color: #4caf50;
+      margin-right: 8px;
+      animation: checkmark 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .recipe-card {
+      background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+      border: 2px solid #ffe8a6;
+      box-shadow: 0 12px 32px rgba(255, 184, 77, 0.2);
+    }
+    
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+      .card {
+        padding: 20px;
+        margin: 0 auto 16px;
+      }
+      .card h1 {
+        font-size: 24px;
+      }
+      .card p {
+        font-size: 14px;
+      }
+      button {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      textarea, input {
+        padding: 12px;
+        font-size: 16px;
+      }
+      #output, #recipeOutput {
+        padding: 16px;
+        font-size: 14px;
+        min-height: 100px;
+      }
+      .card:hover {
+        transform: translateY(-6px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">⚡ AI Powered</span>
+    <h1>Explo5e</h1>
+    <p>Type a complicated topic and click explain.</p>
+    <textarea id="topicInput" placeholder="e.g. quantum entanglement, blockchain, climate change..."></textarea>
+    <button id="explainBtn">Explain Simply</button>
+    <div id="output" role="status">Your explanation will appear here.</div>
+  </div>
+
+  <div class="card" style="margin-top: 24px;">
+    <span class="badge">🍳 AI Chef</span>
+    <h1>Ingrook</h1>
+    <p>Enter three ingredients and click Cook Magic for a fancy dish name + 3-step recipe.</p>
+    <input id="ingredient1" placeholder="Ingredient 1" />
+    <input id="ingredient2" placeholder="Ingredient 2" />
+    <input id="ingredient3" placeholder="Ingredient 3" />
+    <button id="cookBtn">Cook Magic</button>
+    <div id="recipeOutput" role="status" class="recipe-card">Your recipe will appear here.</div>
+  </div>
+
+  <script>
+    const topicInput = document.getElementById("topicInput");
+    const explainBtn = document.getElementById("explainBtn");
+    const output = document.getElementById("output");
+
+    const ingredient1 = document.getElementById("ingredient1");
+    const ingredient2 = document.getElementById("ingredient2");
+    const ingredient3 = document.getElementById("ingredient3");
+    const cookBtn = document.getElementById("cookBtn");
+    const recipeOutput = document.getElementById("recipeOutput");
+
+    explainBtn.addEventListener("click", async () => {
+      const topic = topicInput.value.trim();
+      if (!topic) {
+        output.textContent = "Please type a topic first.";
+        return;
+      }
+      explainBtn.disabled = true;
+      explainBtn.textContent = "Explaining...";
+      explainBtn.classList.add("loading-state");
+      output.textContent = "🔄 Waiting for Gemini response...";
+
+      try {
+        const resp = await fetch("/api/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          output.textContent = `❌ Error: ${data.error || resp.statusText}` + (data.details ? `\nDetails: ${data.details}` : "");
+        } else {
+          output.innerHTML = `<span class="success-check">✓</span>${data.explanation || "No explanation returned."}`;
+        }
+      } catch (err) {
+        output.textContent = `❌ Network error: ${err.message}`;
+      } finally {
+        explainBtn.disabled = false;
+        explainBtn.textContent = "Explain Simply";
+        explainBtn.classList.remove("loading-state");
+      }
+    });
+
+    cookBtn.addEventListener("click", async () => {
+      const ingredients = [ingredient1.value.trim(), ingredient2.value.trim(), ingredient3.value.trim()];
+      if (ingredients.some(i => !i)) {
+        recipeOutput.textContent = "Please fill all three ingredients.";
+        return;
+      }
+      cookBtn.disabled = true;
+      cookBtn.textContent = "Cooking...";
+      cookBtn.classList.add("loading-state");
+      recipeOutput.textContent = "🔄 Cooking up your recipe...";
+
+      try {
+        const resp = await fetch("/api/fridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ingredients })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          recipeOutput.textContent = `❌ Error: ${data.error || resp.statusText}` + (data.details ? `\nDetails: ${data.details}` : "");
+        } else {
+          recipeOutput.innerHTML = `<span class="success-check">✓</span>${data.recipe || "No recipe returned."}`;
+        }
+      } catch (err) {
+        recipeOutput.textContent = `❌ Network error: ${err.message}`;
+      } finally {
+        cookBtn.disabled = false;
+        cookBtn.textContent = "Cook Magic";
+        cookBtn.classList.remove("loading-state");
+      }
+    });
+  </script>
+</body>
+</html>
